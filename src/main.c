@@ -13,14 +13,19 @@
 int main(int argc, char **argv) {
   const char *prog = argv[0];
   int c;
-  bool number = 0;
+  bool number, nonempty;
   unsigned lineno = 0;
   char buffer[MAX_LINE_LENGTH];
+
+  number = nonempty = false;
 
   while (argc-- > 0 && (*++argv)[0] == '-') {
     switch (c = *++argv[0]) {
     case 'n':
       number = true;
+      break;
+    case 'b':
+      nonempty = true;
       break;
     default:
       printf("%s: illegal option %c\n", prog, c);
@@ -33,10 +38,13 @@ int main(int argc, char **argv) {
     if (fp == NULL)
       handle_error("fopen");
 
-    if (number) {
+    if (number || nonempty) {
       while (fgets(buffer, MAX_LINE_LENGTH, fp) != NULL) {
-        lineno++;
-        printf("%3.d: %s", lineno, buffer);
+        int is_nonempty = strlen(buffer) > 1;
+        if (!nonempty || is_nonempty) {
+          lineno++;
+          printf("%3.d: %s", lineno, buffer);
+        }
       }
     } else {
       while ((c = fgetc(fp)) != EOF)
